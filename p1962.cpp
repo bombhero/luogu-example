@@ -16,7 +16,7 @@ class BigNumber128
     BigNumber128()
     {
         int i;
-        this->item_size = 8*sizeof(unsigned int);
+        this->item_size = 8*sizeof(unsigned long);
         for(i=0; i<NUM_SIZE; i++)
             this->content[i] = 0;
     }
@@ -24,7 +24,7 @@ class BigNumber128
     BigNumber128(unsigned long init_val[NUM_SIZE])
     {
         int i;
-        this->item_size = 8*sizeof(unsigned int);
+        this->item_size = 8*sizeof(unsigned long);
         for(i=0; i<NUM_SIZE; i++)
             this->content[i] = init_val[i];
     }
@@ -62,6 +62,21 @@ class BigNumber128
         }
         return result;
     }
+
+    BigNumber128 *num_add(BigNumber128 *b)
+    {
+        BigNumber128 *result = new BigNumber128();
+        unsigned long long addition_val, sum_val;
+        int i;
+
+        addition_val = 0;
+        for(i=0; i<NUM_SIZE; i++){
+            sum_val = (unsigned long long)this->content[i] + (unsigned long long)b->content[i] + addition_val;
+            addition_val = sum_val >> this->item_size;
+            result->content[i] = sum_val & this->item_mask;
+        }
+        return result;
+    }
 };
 
 typedef BigNumber128 cell_t;
@@ -77,8 +92,7 @@ class Matrix
     {
         this->row = row;
         this->col = col;
-        this->content = (cell_t *)malloc(row*col*sizeof(cell_t));
-        memset(this->content, 0, row*col*sizeof(cell_t));
+        
         return;
     }
 
@@ -105,10 +119,11 @@ int main()
     BigNumber128 *b = new BigNumber128();
     
     a->content[0] = 0xFFFF0000;
-    a->content[1] = 1;
-    b->content[1] = 2;
+    a->content[1] = 0xFFFFEEEE;
+    b->content[0] = 0x12345678;
+    b->content[1] = 0xFFFF0000;
 
-    BigNumber128 *result = a->num_mul(b);
+    BigNumber128 *result = a->num_add(b);
     cout<<hex<<result->content[0]<<endl;
     cout<<hex<<result->content[1]<<endl;
     cout<<hex<<result->content[2]<<endl;
