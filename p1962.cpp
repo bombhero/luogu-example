@@ -84,49 +84,47 @@ typedef BigNumber128 cell_t;
 class Matrix
 {
     private:
-        cell_t *content;
+        cell_t **content;
 
     public:
-    int row, col;
+    int row_count, col_count;
     Matrix(int row, int col)
     {
-        this->row = row;
-        this->col = col;
-        
+        int row_idx, col_idx;
+        this->row_count = row;
+        this->col_count = col;
+        this->content = (cell_t **)malloc(row*col*sizeof(cell_t *));
+        for(row_idx=0; row_idx<this->row_count; row_idx++){
+            for(col_idx=0; col_idx<this->col_count; col_idx++){
+                *(this->content+(row_idx*this->row_count+col_idx)) = new BigNumber128();
+            }
+        }
         return;
     }
 
     Matrix *matmul(Matrix *b)
     {
+        if(this->row_count != b->col_count){
+            cout<<this->row_count<<" cannot match "<<b->col_count<<endl;
+            return NULL;
+        }
+
         return NULL;
     }
 
-    cell_t get_cell(int row, int col)
+    cell_t *get_cell(int row, int col)
     {
-        return *(this->content + row * this->col + col);
-    }
-
-    void set_cell(int row, int col, cell_t val)
-    {
-        *(this->content + row * this->col + col) = val;
+        return *(this->content + row * this->col_count + col);
     }
 };
 
 
 int main()
 {    
-    BigNumber128 *a = new BigNumber128();
-    BigNumber128 *b = new BigNumber128();
-    
-    a->content[0] = 0xFFFF0000;
-    a->content[1] = 0xFFFFEEEE;
-    b->content[0] = 0x12345678;
-    b->content[1] = 0xFFFF0000;
+    Matrix *m1 = new Matrix(2, 3);
+    Matrix *m2 = new Matrix(3, 2);
 
-    BigNumber128 *result = a->num_add(b);
-    cout<<hex<<result->content[0]<<endl;
-    cout<<hex<<result->content[1]<<endl;
-    cout<<hex<<result->content[2]<<endl;
-    cout<<hex<<result->content[3]<<endl;
+    Matrix *result = m1->matmul(m2);
+
     return 0;
 }
