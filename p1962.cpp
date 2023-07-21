@@ -1,132 +1,83 @@
-// Not finish yet
 #include <iostream>
-#include <memory.h>
 using namespace std;
 
-#define NUM_SIZE 4
 
-class BigNumber128
-{
-    private:
-        int item_size;
-        unsigned long item_mask = 0xFFFFFFFF;
-    public:
-    unsigned long content[4];
+typedef unsigned long long cell_t;
+cell_t base_num = 1000000007;
 
-    BigNumber128()
-    {
-        int i;
-        this->item_size = 8*sizeof(unsigned long);
-        for(i=0; i<NUM_SIZE; i++)
-            this->content[i] = 0;
-    }
-
-    BigNumber128(unsigned long init_val[NUM_SIZE])
-    {
-        int i;
-        this->item_size = 8*sizeof(unsigned long);
-        for(i=0; i<NUM_SIZE; i++)
-            this->content[i] = init_val[i];
-    }
-
-    BigNumber128(BigNumber128 *init_num)
-    {
-        int i;
-        this->item_size = 8*sizeof(unsigned long); 
-        for(i=0; i<NUM_SIZE; i++)
-            this->content[i] = init_num->content[i];
-    }
-
-    BigNumber128 *num_mul(BigNumber128 *b)
-    {
-        BigNumber128 *result = new BigNumber128();
-        unsigned long long tmp;
-        unsigned long long addition_val, sum_val;
-        int i, j;
-
-        for(i=(NUM_SIZE/2); i<NUM_SIZE; i++){
-            if((this->content[i] != 0) || (b->content[i] != 0))
-                cout<<"The number is out of memory."<<endl;
-        }
-
-        for(i=0; i<NUM_SIZE/2; i++){
-            addition_val = 0;
-            for(j=0; j<NUM_SIZE/2; j++){
-                tmp = (unsigned long long)this->content[i] * (unsigned long long)b->content[j] + addition_val;
-                addition_val = tmp >> this->item_size;
-                sum_val = (unsigned long long)result->content[i+j] + (unsigned long long)(tmp & this->item_mask);
-                result->content[i+j] = sum_val & this->item_mask;
-                result->content[i+j+1] += (sum_val >> this->item_size);
-            }
-            result->content[i+j] += addition_val;
-        }
-        return result;
-    }
-
-    BigNumber128 *num_add(BigNumber128 *b)
-    {
-        BigNumber128 *result = new BigNumber128();
-        unsigned long long addition_val, sum_val;
-        int i;
-
-        addition_val = 0;
-        for(i=0; i<NUM_SIZE; i++){
-            sum_val = (unsigned long long)this->content[i] + (unsigned long long)b->content[i] + addition_val;
-            addition_val = sum_val >> this->item_size;
-            result->content[i] = sum_val & this->item_mask;
-        }
-        return result;
-    }
-};
-
-typedef BigNumber128 cell_t;
 
 class Matrix
 {
-    private:
-        cell_t *content;
-
     public:
-    int row, col;
-    Matrix(int row, int col)
+    cell_t content[2][2];
+    Matrix()
     {
-        this->row = row;
-        this->col = col;
-        
+        int i, j;
+        for(i=0; i<2; i++)
+            for(j=0; j<2; j++)
+                content[i][j] = 0;
         return;
     }
 
-    Matrix *matmul(Matrix *b)
+    Matrix operator* (const Matrix &b) const
     {
-        return NULL;
+        Matrix result;
+        
+        result.content[0][0] = (content[0][0] * b.content[0][0] + content[0][1] * b.content[1][0]) % base_num;
+        result.content[0][1] = (content[0][0] * b.content[0][1] + content[0][1] * b.content[1][1]) % base_num;
+        result.content[1][0] = (content[1][0] * b.content[0][0] + content[1][1] * b.content[1][0]) % base_num;
+        result.content[1][1] = (content[1][0] * b.content[0][1] + content[1][1] * b.content[1][1]) % base_num;
+
+        return result;
     }
 
-    cell_t get_cell(int row, int col)
-    {
-        return *(this->content + row * this->col + col);
-    }
-
-    void set_cell(int row, int col, cell_t val)
-    {
-        *(this->content + row * this->col + col) = val;
-    }
 };
 
 
-int main()
-{    
-    BigNumber128 *a = new BigNumber128();
-    BigNumber128 *b = new BigNumber128();
-    
-    a->content[0] = 0xFFFF0000;
-    a->content[1] = 0xFFFFEEEE;
-    b->content[0] = 0x12345678;
-    b->content[1] = 0xFFFF0000;
+Matrix matpow(Matrix mat_s, unsigned long long n)
+{
+    Matrix mat_r, mat_t;
 
-    BigNumber128 *result = a->num_add(b);
-    cout<<hex<<result->content[0]<<endl;
-    cout<<hex<<result->content[1]<<endl;
-    cout<<hex<<result->content[2]<<endl;
-    cout<<hex<<result->content[3]<<endl;
+    if(n==1)
+        return mat_s;
+
+    if(n==2){
+        mat_r = mat_s * mat_s;
+        return mat_r;
+    }
+
+    if(n&1){
+        mat_t = matpow(mat_s, n/2);
+        mat_r = mat_t * mat_t * mat_s;
+    }else{
+        mat_t = matpow(mat_s, n/2);
+        mat_r = mat_t * mat_t;
+    }
+
+    return mat_r;
+}
+
+
+int main()
+{
+    unsigned long long n;
+    Matrix mat_base, mat_result;
+
+    mat_base.content[0][0] = 1;
+    mat_base.content[0][1] = 1;
+    mat_base.content[1][0] = 1;
+    mat_base.content[1][1] = 0;
+    
+    cin>>n;
+
+    if(n==1){
+        cout<<1<<endl;
+        return 0;
+    }
+
+    mat_result = matpow(mat_base, n-1);
+
+    cout<<mat_result.content[0][0]<<endl;
+
     return 0;
 }
