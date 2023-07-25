@@ -129,11 +129,38 @@ int export_data()
 int detect_min_gap()
 {
     int min_gap = -1;
-    int last_num;
-    int stack_idx = 0;
-    struct ReportItem *p;
+    int i, n;
+    int tmp;
 
-    return 0;
+    n = export_data();
+    min_gap = abs(a[0] - a[1]);
+    for(i=1; i<n-1; i++){
+        tmp = abs(a[i] - a[i+1]);
+        if(tmp<min_gap)
+            min_gap = tmp;
+    }
+
+    return min_gap;
+}
+
+int detect_min_sort_gap()
+{
+    int min_gap = -1;
+    int i, j;
+    int tmp;
+    int n;
+
+    n = export_data();
+    min_gap = abs(a[0] - a[1]);
+    for(i=0; i<n-1; i++)
+        for(j=i+1; j<n; j++)
+        {
+            tmp = abs(a[i] - a[j]);
+            if(tmp<min_gap)
+                min_gap = tmp;
+        }
+
+    return min_gap;
 }
 
 int main()
@@ -143,6 +170,7 @@ int main()
     int n, m;
     int i;
     int val, position;
+    int min_gap;
 
     cin>>n>>m;
     for(i=0;i<n;i++){
@@ -165,16 +193,22 @@ int main()
         }
 
         if(s.find("MIN_GAP") == 0){
+            min_gap = detect_min_gap();
+            cout<<min_gap<<endl;
+        }
 
+        if(s.find("MIN_SORT_GAP") == 0){
+            min_gap = detect_min_sort_gap();
+            cout<<min_gap<<endl;
         }
     }
 
-    print_report();
-    n = export_data();
-    cout<<"n="<<n<<endl;
-    for(i=0; i<n; i++){
-        cout<<a[i]<<" ";
-    }
+    // print_report();
+    // n = export_data();
+    // cout<<"n="<<n<<endl;
+    // for(i=0; i<n; i++){
+    //     cout<<a[i]<<" ";
+    // }
 
     return 0;
 }
